@@ -1,0 +1,365 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>KUOE Kyoto - Premium Mechanical Clock</title>
+    <style>
+        :root {
+            --bg-gradient: radial-gradient(circle at center, #4a148c 0%, #2e003e 50%, #1a001a 100%);
+            --gold: #d4af37;
+            --steel: linear-gradient(145deg, #e6e6e6, #999);
+            --dial-ivory: #fdfaf0;
+            --leather: #4e2c1c;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            background: var(--bg-gradient);
+            height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            overflow: hidden;
+            font-family: 'Georgia', serif;
+        }
+
+        /* Bokeh Background Elements */
+        .bokeh {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            filter: blur(80px);
+            z-index: -1;
+        }
+        .light {
+            position: absolute;
+            border-radius: 50%;
+            background: rgba(212, 175, 55, 0.1);
+            animation: float 20s infinite alternate;
+        }
+
+        /* Watch Case */
+        .watch-container {
+            position: relative;
+            width: 450px;
+            height: 700px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            perspective: 1500px;
+        }
+
+        /* Leather Strap */
+        .strap {
+            width: 140px;
+            height: 200px;
+            background: var(--leather);
+            background-image: 
+                radial-gradient(circle at 50% 50%, transparent 50%, rgba(0,0,0,0.3) 100%),
+                url('https://www.transparenttextures.com/patterns/leather.png');
+            border-radius: 10px;
+            box-shadow: inset 0 0 20px rgba(0,0,0,0.5), 0 20px 40px rgba(0,0,0,0.6);
+            position: relative;
+            z-index: 1;
+        }
+
+        .strap.top { border-bottom-left-radius: 0; border-bottom-right-radius: 0; top: 40px; }
+        .strap.bottom { border-top-left-radius: 0; border-top-right-radius: 0; bottom: 40px; }
+
+        .stitching {
+            position: absolute;
+            left: 10px; right: 10px; top: 0; bottom: 0;
+            border-left: 3px dotted rgba(255,255,255,0.1);
+            border-right: 3px dotted rgba(255,255,255,0.1);
+        }
+
+        /* Watch Main Body */
+        .case {
+            width: 320px;
+            height: 320px;
+            background: var(--steel);
+            border-radius: 50%;
+            position: relative;
+            z-index: 2;
+            box-shadow: 
+                0 30px 60px rgba(0,0,0,0.8),
+                inset 0 2px 5px rgba(255,255,255,0.8);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            transform: rotateX(10deg);
+        }
+
+        .bezel {
+            width: 300px;
+            height: 300px;
+            background: linear-gradient(135deg, #eee 0%, #bbb 50%, #999 100%);
+            border-radius: 50%;
+            border: 2px solid #888;
+            position: relative;
+            box-shadow: inset 0 2px 10px rgba(0,0,0,0.4);
+        }
+
+        /* The Dial */
+        .dial {
+            width: 270px;
+            height: 270px;
+            background: var(--dial-ivory);
+            border-radius: 50%;
+            position: absolute;
+            top: 50%; left: 50%;
+            transform: translate(-50%, -50%);
+            background-image: radial-gradient(circle, #fff 0%, #fdfaf0 100%);
+            box-shadow: inset 0 0 10px rgba(0,0,0,0.1);
+            overflow: hidden;
+        }
+
+        .dial-texture {
+            position: absolute;
+            width: 100%; height: 100%;
+            opacity: 0.3;
+            background-image: url('https://www.transparenttextures.com/patterns/natural-paper.png');
+        }
+
+        /* Numerals and Markings */
+        .logo {
+            position: absolute;
+            top: 65px; width: 100%;
+            text-align: center;
+            color: #222;
+        }
+        .logo h1 { font-size: 22px; letter-spacing: 2px; font-weight: 800; margin: 0; }
+        .logo p { font-size: 8px; letter-spacing: 1px; font-weight: bold; margin-top: -2px; }
+
+        .mechanical-text {
+            position: absolute;
+            bottom: 75px; width: 100%;
+            text-align: center;
+            font-size: 7px;
+            letter-spacing: 1px;
+            color: #444;
+            font-weight: bold;
+        }
+
+        .number {
+            position: absolute;
+            width: 100%; height: 100%;
+            text-align: center;
+            padding: 12px;
+            font-size: 28px;
+            font-weight: 900;
+            color: #1a1a1a;
+            transform-origin: center;
+        }
+
+        /* Domed Glass Effect */
+        .glass {
+            position: absolute;
+            width: 285px; height: 285px;
+            top: 50%; left: 50%;
+            transform: translate(-50%, -50%);
+            border-radius: 50%;
+            background: linear-gradient(135deg, rgba(255,255,255,0.4) 0%, rgba(255,255,255,0) 40%, rgba(255,255,255,0.1) 100%);
+            z-index: 10;
+            pointer-events: none;
+            box-shadow: inset 0 0 20px rgba(255,255,255,0.2);
+        }
+
+        .glare {
+            position: absolute;
+            width: 150px; height: 40px;
+            background: rgba(255,255,255,0.15);
+            filter: blur(10px);
+            transform: rotate(-45deg);
+            top: 40px; left: 20px;
+        }
+
+        /* Hands Animation */
+        .hand {
+            position: absolute;
+            bottom: 50%; left: 50%;
+            transform-origin: bottom center;
+            border-radius: 4px;
+            z-index: 5;
+            box-shadow: 0 5px 10px rgba(0,0,0,0.3);
+        }
+
+        .hour {
+            width: 8px; height: 75px;
+            background: #d4af37;
+            left: calc(50% - 4px);
+            border: 1px solid #b38f1d;
+        }
+
+        .minute {
+            width: 6px; height: 110px;
+            background: #d4af37;
+            left: calc(50% - 3px);
+            border: 1px solid #b38f1d;
+        }
+
+        .second {
+            width: 2px; height: 125px;
+            background: #222;
+            left: calc(50% - 1px);
+            z-index: 6;
+        }
+        
+        .second::after { /* The small circle on the second hand */
+            content: '';
+            position: absolute;
+            top: 25px; left: -4px;
+            width: 10px; height: 10px;
+            background: #d4af37;
+            border-radius: 50%;
+            border: 1px solid #222;
+        }
+
+        .center-pin {
+            position: absolute;
+            top: 50%; left: 50%;
+            width: 12px; height: 12px;
+            background: #222;
+            border-radius: 50%;
+            transform: translate(-50%, -50%);
+            z-index: 7;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.5);
+        }
+
+        /* Pendulum Element */
+        .pendulum-container {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            animation: swing 4s ease-in-out infinite;
+            z-index: 0;
+            opacity: 0.4;
+        }
+        .pendulum-shadow {
+            position: absolute;
+            bottom: -50px; left: 50%;
+            width: 200px; height: 40px;
+            background: radial-gradient(ellipse at center, rgba(0,0,0,0.4) 0%, transparent 70%);
+            transform: translateX(-50%);
+        }
+
+        @keyframes swing {
+            0% { transform: rotate(-3deg); }
+            100% { transform: rotate(3deg); }
+        }
+
+        @keyframes float {
+            0% { transform: translate(0, 0); }
+            100% { transform: translate(100px, 50px); }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="bokeh" id="bokeh"></div>
+
+    <div class="watch-container">
+        <div class="pendulum-container">
+            <div class="pendulum-shadow"></div>
+        </div>
+
+        <div class="strap top">
+            <div class="stitching"></div>
+        </div>
+
+        <div class="case">
+            <div class="bezel">
+                <div class="dial" id="dial">
+                    <div class="dial-texture"></div>
+                    <div class="logo">
+                        <h1>KUOE</h1>
+                        <p>KYOTO</p>
+                    </div>
+                    
+                    <!-- Numerals -->
+                    <div id="numbers-container"></div>
+                    
+                    <div class="mechanical-text">MECHANICAL</div>
+                    <div class="mechanical-text" style="bottom: 12px;">JAPAN MADE</div>
+
+                    <!-- Hands -->
+                    <div class="hand hour" id="hourHand"></div>
+                    <div class="hand minute" id="minHand"></div>
+                    <div class="hand second" id="secHand"></div>
+                    <div class="center-pin"></div>
+                </div>
+                <!-- Glass Layer -->
+                <div class="glass">
+                    <div class="glare"></div>
+                </div>
+            </div>
+            <!-- Crown -->
+            <div style="position: absolute; right: -15px; top: 50%; width: 20px; height: 40px; background: #bbb; border-radius: 3px; transform: translateY(-50%); box-shadow: inset 0 0 5px rgba(0,0,0,0.3); border-left: 2px solid #888;"></div>
+        </div>
+
+        <div class="strap bottom">
+            <div class="stitching"></div>
+        </div>
+    </div>
+
+    <script>
+        // Generate Numerals
+        const container = document.getElementById('numbers-container');
+        for (let i = 1; i <= 12; i++) {
+            const num = document.createElement('div');
+            num.className = 'number';
+            num.innerText = i;
+            num.style.transform = `rotate(${i * 30}deg)`;
+            const inner = document.createElement('div');
+            inner.innerText = i;
+            inner.style.transform = `rotate(-${i * 30}deg)`;
+            num.innerText = '';
+            num.appendChild(inner);
+            container.appendChild(num);
+        }
+
+        // Generate Bokeh lights
+        const bokeh = document.getElementById('bokeh');
+        for (let i = 0; i < 15; i++) {
+            const light = document.createElement('div');
+            light.className = 'light';
+            const size = Math.random() * 300 + 100;
+            light.style.width = size + 'px';
+            light.style.height = size + 'px';
+            light.style.top = Math.random() * 100 + '%';
+            light.style.left = Math.random() * 100 + '%';
+            light.style.animationDelay = (Math.random() * 10) + 's';
+            bokeh.appendChild(light);
+        }
+
+        function updateClock() {
+            // Set timezone to Bangladesh (GMT+6)
+            const now = new Date();
+            const utc = now.getTime() + (now.getTimezoneOffset() * 60000);
+            const bdTime = new Date(utc + (3600000 * 6));
+
+            const seconds = bdTime.getSeconds();
+            const milliseconds = bdTime.getMilliseconds();
+            const minutes = bdTime.getMinutes();
+            const hours = bdTime.getHours();
+
+            // Smooth sweep for seconds
+            const secDeg = ((seconds + milliseconds / 1000) * 6);
+            // Smooth movement for minutes and hours
+            const minDeg = (minutes * 6) + (seconds * 0.1);
+            const hourDeg = (hours % 12 * 30) + (minutes * 0.5);
+
+            document.getElementById('secHand').style.transform = `rotate(${secDeg}deg)`;
+            document.getElementById('minHand').style.transform = `rotate(${minDeg}deg)`;
+            document.getElementById('hourHand').style.transform = `rotate(${hourDeg}deg)`;
+
+            requestAnimationFrame(updateClock);
+        }
+
+        // Start movement
+        updateClock();
+    </script>
+</body>
+</html>
